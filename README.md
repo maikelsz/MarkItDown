@@ -198,6 +198,40 @@ El tema oscuro es el predeterminado. El cambio de tema afecta al documento, al e
 
 En Windows 10 y 11 la barra de título se oscurece mediante la API DWM. En versiones anteriores el documento y los controles siguen el tema, pero la barra de título puede quedar con el estilo del sistema.
 
+## Plugin para Total Commander
+
+MarkItDown 1.0.0 incluye un plugin **WLX de 64 bits** para Total Commander, ubicado en `TCplg/`. Permite ver archivos `.md` directamente en el Lister (`F3`) y en el visor rápido (`Ctrl+Q`) con el mismo renderizador, temas y resaltado del visor de escritorio, pero en modo solo lectura.
+
+### Instalación
+
+1. Copia `MarkItDown.wlx`, `MarkItDown.Core.dll` y `vcruntime140.dll` desde `TCplg\dist\MarkItDown-1.0.0-wlx-x64\` a una carpeta estable, por ejemplo `C:\totalcmd\plugin\`.
+2. En Total Commander abre **Configuración → Opciones → Lister → Configurar plugins del Lister → Añadir**.
+3. Selecciona `MarkItDown.wlx` y usa la cadena de detección `EXT="MD"`.
+4. Acepta y reinicia Total Commander.
+
+En Total Commander x64 el plugin debe quedar marcado como 64 bits (`0=1` en `[ListerPlugins64]`); el diálogo de configuración lo hace automáticamente. Si se edita `wincmd.ini` a mano, sin esa marca el plugin se ignora aunque esté registrado en `[ListerPlugins]`. El valor `$checksum$` lo genera Total Commander y no se escribe a mano. Si cambias la ruta o la cadena de detección manualmente, Total Commander recalcula el checksum y elimina `0=1`; vuelve a añadir la marca o usa el diálogo de configuración.
+
+### Uso
+
+- `F3` sobre un `.md`: abre el Lister con MarkItDown.
+- `Ctrl+Q` sobre un `.md`: muestra la vista rápida en el panel contrario.
+- Flechas del panel: al cambiar entre archivos `.md`, `ListLoadNextW` reutiliza la misma ventana; al pasar a otro tipo de archivo, Total Commander vuelve a su visor interno.
+- El título del Lister muestra `(markitdown)` en minúsculas porque Total Commander deriva ese texto del nombre del archivo; la versión real del DLL es `1.0.0.0`.
+
+### Tema
+
+El plugin lee `HKCU\Software\MarkItDown\Theme` (`dark`, `light` o `system`), la misma preferencia que el visor de escritorio. Sin valor, usa oscuro. El marco, los menús y la barra de estado del Lister pertenecen a Total Commander; el documento y su barra de desplazamiento siguen el tema elegido.
+
+### Alcance
+
+El plugin es solo visor: no edita, no guarda, no exporta HTML, no muestra el panel lateral de índice ni vigila cambios en disco. Solo se activa para `.md` (no para `.markdown` ni las demás extensiones del visor de escritorio). Los enlaces externos se abren en el navegador; los enlaces a otros `.md` se abren en el mismo Lister; otros archivos locales se abren con su aplicación asociada.
+
+### Compilación y pruebas
+
+El plugin se compila con `TCplg\build.ps1` (Visual Studio 2019 con C++/CLI y .NET SDK 3.1.201). Genera `MarkItDown.wlx` x64, `MarkItDown.Core.dll` y un ZIP en `TCplg\dist\`. Los detalles de instalación, compilación, solución de problemas y pruebas están en `TCplg\README.md`.
+
+Se validó en Total Commander 9.22a x64 con `F3` y `Ctrl+Q`, cambio entre dos `.md`, vuelta al visor interno con `.txt`, redimensionado, cierre y temas oscuro y claro.
+
 ## Estructura del proyecto
 
 - `MainForm.cs`: ventana principal, carga, navegación, zoom, temas, recarga, vigilancia del archivo, modo edición, divisor del índice y sincronización del cursor.
@@ -212,6 +246,7 @@ En Windows 10 y 11 la barra de título se oscurece mediante la API DWM. En versi
 - `Markdown/`: parser, renderizador, saneador, resaltador y exportador.
 - `Assets/`: hojas de estilo, icono y estado vacío.
 - `test/`: documento de prueba, exportaciones, capturas y scripts de validación.
+- `TCplg/`: plugin WLX para Total Commander, con fuentes, `build.ps1`, paquete y pruebas propias.
 
 ## Pruebas
 
