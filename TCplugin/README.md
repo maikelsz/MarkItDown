@@ -7,7 +7,7 @@ Plugin **WLX** de Total Commander para ver archivos Markdown (`.md`) dentro del 
 - Visor nativo WLX de **64 bits** para `TOTALCMD64.EXE` (Total Commander 9.22a x64 o superior).
 - Se activa únicamente para la extensión `.md` mediante la cadena de detección `EXT="MD"`.
 - Renderizado Markdown con el mismo motor, CSS y resaltado que el visor de escritorio MarkItDown 1.0.0.
-- Resaltado de código para C#, JavaScript, C/C++, BASIC, Pascal, Fortran, JSON, LEN y LEAL, entre otros; LEN y LEAL se muestran con sus mnemónicos, rotaciones, comentarios y números.
+- Resaltado de código para C#, JavaScript, C/C++, BASIC, Pascal, Fortran, JSON, HTML/XML, CSS, LEN y LEAL, entre otros; LEN y LEAL se muestran con sus mnemónicos, rotaciones, comentarios y números.
 - Tema oscuro por defecto; también admite tema claro y seguimiento del tema de Windows.
 - Funciona en el Lister normal (`F3`) y en el visor rápido (`Ctrl+Q`).
 - `ListLoadNextW` reutiliza la misma ventana al cambiar de archivo con las flechas del panel.
@@ -161,11 +161,15 @@ El núcleo enlaza los mismos archivos que el visor de escritorio:
 
 - Carga en el Lister de Total Commander 9.22a x64 con `F3` y título `Lister (markitdown)`.
 - Vista rápida con `Ctrl+Q` y renderizado en el panel derecho.
+- Núcleo resincronizado con el visor 1.0.0: el HTML oscuro y claro generado para el mismo documento es **idéntico byte a byte** antes y después de los cambios de resaltado del editor (la ruta del visor no se ve afectada).
+- Bloques HTML y CSS renderizados con tokens en el Lister (`tok-tag`, `tok-attr`, `tok-meta`, `tok-com`), igual que en el visor de escritorio.
+- Verificación automatizada con `test\TcListerTest.ps1` sobre el plugin instalado en `C:\totalcmd\plugin`: título `Lister (markitdown)`, módulo `MarkItDown.wlx` cargado en el proceso de TC y `Esc` cerrando el Lister; quick view (`Ctrl+Q`) con el módulo cargado, `Esc` cerrándola y navegación con flechas que recarga el panel (capturas `qv1`/`qv2` distintas).
+- El harness genera el ini de prueba con la sección `[ListerPlugins64]` y el `$checksum$` de la instalación real; sin esa marca, TC x64 ignora el plugin y usa su Lister interno. La cadena de detección debe conservar las comillas (`EXT="MD"`), porque TC calcula el checksum sobre la sección `[ListerPlugins]`.
 - Instalación real en `C:\totalcmd\plugin\` con la marca `0=1` de `[ListerPlugins64]` y el checksum válido.
 - Resaltado de LEN y LEAL en el Lister y en el visor rápido, incluidos mnemónicos, rotaciones, comentarios `/` y `;` y números `0x`/`0o`.
 - `Esc` cierra el Lister y devuelve el foco al panel; `Ctrl+Q` alterna el visor rápido y `Esc` lo cierra.
 - Desplazamiento del documento con `PageDown` en el Lister y en el visor rápido.
-- Cambio de `sample.md` a `second.md` con las flechas del panel, reutilizando la ventana mediante `ListLoadNextW`.
+- Cambio de `demo.md` a `second.md` con las flechas del panel, reutilizando la ventana mediante `ListLoadNextW`.
 - Cambio de `.md` a `.txt`: Total Commander vuelve a su visor interno.
 - Redimensionado del Lister y cierre limpio de la ventana.
 - Tema oscuro y tema claro dentro de Total Commander.
