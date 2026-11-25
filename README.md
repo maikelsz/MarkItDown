@@ -25,7 +25,7 @@ MarkItDown 1.0.0 es un visor y editor de Markdown rápido y ligero para Windows,
 - El editor está a la izquierda y la vista previa a la derecha. Al mover el cursor, el visor se desplaza al bloque equivalente.
 - Alineación bidireccional: al pulsar en el editor, el visor coloca la línea correspondiente a la misma altura; al pulsar en el visor, el editor salta a esa línea. Solo una selección explícita de texto resalta el bloque o rango equivalente en el panel contrario; un clic simple no marca nada y borra la selección anterior en ambos paneles.
 - Marcadores Markdown con estilo: `#` en negrita y color del encabezado, `**Negrita**` en negrita, `*cursiva*` en cursiva y `~~tachado~~` tachado, tanto en el texto como en los marcadores.
-- Normalización automática del código al definir un bloque cercado: BASIC, Fortran, SQL, LEN y LEAL en mayúsculas; Pascal en minúsculas; Visual Basic con grafía canónica; `true`/`false`/`null` de JSON en minúsculas.
+- Normalización automática del código al definir un bloque cercado, activable en **Editar → Normalizar código**: BASIC, Fortran, SQL, LEN y LEAL en mayúsculas; Pascal en minúsculas; Visual Basic con grafía canónica; `true`/`false`/`null` de JSON en minúsculas.
 - Doble clic en el divisor editor/visor restaura el reparto 50/50; doble clic en el divisor del índice lo devuelve a su ancho mínimo.
 - Copia temporal automática para recuperar cambios tras un cierre inesperado.
 - Continuación automática de listas, listas de tareas y citas al pulsar `Enter`.
@@ -78,13 +78,26 @@ También puedes arrastrar un archivo Markdown sobre la ventana del visor o sobre
 
 ## Interfaz
 
-- **Archivo**: Abrir (`Ctrl+O`), Recargar (`F5`), Editar documento (`F2`), Guardar (`Ctrl+S`), Exportar HTML (`Ctrl+E`), Imprimir (`Ctrl+P`) y Salir.
-- **Ver**: Aumentar zoom (`Ctrl++`), Reducir zoom (`Ctrl+-`), Tamaño normal (`Ctrl+0`), **Índice en el documento** (alterna la TOC generada dentro del contenido), Tema y Cambios en el archivo.
+- **Archivo**: Abrir (`Ctrl+O`), Recargar (`F5`), Guardar (`Ctrl+S`), Exportar HTML (`Ctrl+E`), Imprimir (`Ctrl+P`) y Salir.
+- **Ver**: Aumentar zoom (`Ctrl++`), Reducir zoom (`Ctrl+-`), Tamaño normal (`Ctrl+0`), **Índice en el documento** (`F3`, alterna la TOC generada dentro del contenido), **Resaltar código en bloques del editor**, Tema (`F2`, alterna claro/oscuro) y Cambios en el archivo.
+- **Editar**: **Editar documento** (`F4`) y **Normalizar código**, con las opciones **Automáticamente** (activable) y **Normalizar ahora** (una sola vez).
 - **Ayuda**: Acerca de MarkItDown.
+- **Opciones guardadas**: el índice en el documento, el tema, el resaltado de código del editor y la normalización automática se conservan entre ejecuciones en `HKCU\Software\MarkItDown`. Los tres modos de vigilancia del archivo siguen siendo solo de la sesión actual.
 - **Barra de estado**: ruta del archivo, número de líneas y palabras, estado de guardado y tema actual. Pulsa el tema para alternar entre claro y oscuro.
 - **Índice**: panel estrecho a la izquierda con la lista de encabezados y su número. Se puede arrastrar el divisor para ajustar su ancho; el contenido conserva espacio suficiente para el editor y la vista previa. En modo vista, al pulsar una entrada el visor salta a esa sección. En modo edición, además coloca el cursor en la línea del encabezado y sincroniza la vista previa.
 - Los enlaces externos se abren en el navegador predeterminado.
 - Los enlaces a otros archivos Markdown se abren dentro del visor; los demás archivos locales se abren con la aplicación asociada.
+
+### Atajos
+
+| Atajo | Acción |
+| --- | --- |
+| `F2` | Alterna entre tema oscuro y claro. |
+| `F3` | Muestra u oculta el índice generado dentro del documento. |
+| `F4` | Alterna entre visor y edición (tres estados). |
+| `F5` | Recarga el documento desde el disco. |
+
+Los atajos `F2`-`F5` funcionan también con el foco en la vista previa: un filtro de mensajes los intercepta antes de que el control ActiveX del visor los consuma.
 
 ## Edición
 
@@ -92,9 +105,9 @@ El editor usa la fuente **Segoe UI Symbol** para soportar caracteres no ASCII (C
 
 ### Entrar y salir
 
-Pulsa `F2` o usa **Archivo → Editar documento** para alternar entre tres estados:
+Pulsa `F4` o usa **Editar → Editar documento** para alternar entre tres estados:
 
-| Estado | Vistas visibles | F2 pasa a |
+| Estado | Vistas visibles | F4 pasa a |
 | --- | --- | --- |
 | **Visor solo** (inicial) | Visor | Editor + Visor |
 | **Editor + Visor** | Editor + vista previa en vivo | Solo Editor |
@@ -107,7 +120,7 @@ Pulsa `F2` o usa **Archivo → Editar documento** para alternar entre tres estad
 
 El divisor entre el editor y la vista previa se puede arrastrar. El editor conserva un ancho mínimo de 300 px y la vista previa de 280 px. El panel del índice sigue visible a la izquierda y su divisor también se puede arrastrar.
 
-Si hay cambios sin guardar al presionar `F2` desde **Solo Editor** hacia **Visor solo**, aparece el diálogo de guardado habitual.
+Si hay cambios sin guardar al presionar `F4` desde **Solo Editor** hacia **Visor solo**, aparece el diálogo de guardado habitual.
 
 ### Guardado y conflictos
 
@@ -128,7 +141,15 @@ La copia se actualiza poco después de dejar de escribir y se elimina al guardar
 
 ### Vista previa y seguimiento del cursor
 
-La vista previa se actualiza unos 350 ms después de la última pulsación. Cada bloque renderizado conserva su línea de origen mediante atributos internos, de modo que al mover el cursor el visor se desplaza al bloque equivalente:
+La vista previa se actualiza mientras se escribe y, además, unos 350 ms después de la última pulsación. Para que el texto escrito se vea sin esperar a pausar:
+
+- Se refresca en cuanto se han escrito más de cinco caracteres desde la última actualización.
+- También se refresca al aplicar un marcador Markdown (`#`, `*`, `_`, `` ` ``, `>`, `[`, `]`, etc.), al pulsar `Enter` y ante cualquier cambio que no sea escritura (pegar, borrar, deshacer).
+- El temporizador de 350 ms sigue actuando como red de seguridad: si no se cumple ninguno de los disparadores anteriores, la vista previa se actualiza al dejar de escribir.
+
+Solo hay un renderizado de vista previa en curso a la vez. Si llegan nuevas peticiones mientras tanto, se guarda únicamente la más reciente y se lanza al terminar la actual, de modo que las peticiones no se acumulan ni compiten por el hilo de interfaz.
+
+Cada bloque renderizado conserva su línea de origen mediante atributos internos, de modo que al mover el cursor el visor se desplaza al bloque equivalente:
 
 - Al inicio del documento se muestra el principio.
 - En medio de un documento se muestra la sección correspondiente.
@@ -136,6 +157,17 @@ La vista previa se actualiza unos 350 ms después de la última pulsación. Cada
 - Al escribir o deshacer, la vista previa se vuelve a renderizar y sigue al cursor.
 
 Los atributos de sincronización y el script que los usa solo existen en la vista previa. La exportación HTML no los incluye.
+
+### Rendimiento
+
+El visor mantiene la respuesta en documentos grandes gracias a dos mecanismos:
+
+- **Resaltado y renderizado en segundo plano.** El editor tokeniza el resaltado de sintaxis y la vista previa genera el HTML en un hilo de trabajo. Cada resultado se aplica después en el hilo de interfaz como un único lote (los trazos de color del editor y el cuerpo de la vista previa), de modo que escribir no se ralentiza por el procesado.
+- **Resaltado incremental del editor.** Los tramos de color se normalizan a una lista ordenada y sin solapes. Al escribir, solo se vuelve a aplicar el intervalo afectado por el cambio (la línea actual, la anterior por los encabezados setext y las líneas posteriores que puedan cambiar por un bloque cercado), en lugar de recorrer todos los tramos del documento. Si el cambio es estructural o el documento supera el límite de resaltado, se recurre al recorrido completo.
+- **Resaltado opcional del código.** Con **Ver → Resaltar código en bloques del editor** desactivado, el tokenizador no se ejecuta para los bloques cercados: cada bloque se emite como un único tramo en color de comentario (verde), marcadores incluidos. En una prueba de esfuerzo con un documento de 56 218 caracteres, desactivarlo redujo el tiempo de reaplicación completa del resaltado un 17,6 % y el número de tramos un 19,6 % (1521,95 ms y 1915 tramos con resaltado, 1254,6 ms y 1540 tramos sin él).
+- **Actualización incremental de la vista previa.** La página del visor es una plantilla fija (hoja de estilo, guion de sincronización y el contenedor del contenido). Al actualizar la vista previa, en lugar de recargar la página completa, se sustituye solo el contenido del cuerpo y se avanza su identificador de generación para que el guion vuelva a recopilar las anclas de sincronización. Así se evita el parpadeo y la pérdida de posición de una carga completa.
+  - Solo se recarga la página completa cuando hace falta: en la carga inicial, al cambiar el tema (el CSS va incrustado en la página) y como reserva si la sustitución in situ falla.
+  - Alternar **Ver → Índice en el documento** también usa el camino incremental: solo cambia la visibilidad del índice dentro del contenido y conserva la posición de scroll.
 
 ### Sincronización bidireccional
 
@@ -151,11 +183,15 @@ El editor muestra el Markdown con formato parcial para que el documento sea legi
 
 - El `#` de los encabezados se dibuja en negrita y con el mismo color que el texto del encabezado.
 - El texto entre `**...**` se muestra en negrita y el texto entre `*...*` en cursiva; `~~...~~` se muestra tachado. Los marcadores conservan su color de sintaxis.
-- El resaltado de bloques cercados reconoce C#, JavaScript/TypeScript, C/C++, BASIC, Pascal, Fortran, JSON, LEN y LEAL, entre otros.
+- El resaltado de bloques cercados reconoce C#, JavaScript/TypeScript, C/C++, BASIC, Pascal, Fortran, JSON, HTML/XML/SVG/Razor, CSS/SCSS/Less, LEN y LEAL, entre otros.
+- Los marcadores de los fences se dibujan siempre en verde (`#7EE787` en tema oscuro, `#116329` en tema claro), en ambas líneas de cierre y apertura: las comillas ``` y, en la línea de apertura, también el identificador de lenguaje (por ejemplo, el `javascript` de ```javascript).
+- Con **Ver → Resaltar código en bloques del editor** activado, solo se tokeniza el contenido entre los fences: las palabras clave usan el color de palabra clave, los comentarios se muestran en verde y el resto del código usa el color de texto del tema (blanco sobre oscuro, negro sobre claro). En bloques **HTML/XML** los nombres de etiqueta se pintan en verde (igual que los comentarios), los atributos y el `<!DOCTYPE>`/`<?xml ...?>` en azul, y los comentarios `<!-- -->` en verde; en bloques **CSS** los selectores se pintan en verde, las propiedades en azul, las reglas `@media`/`@keyframes` con el color de palabra clave y los comentarios `/* */` en verde. Las cadenas y números conservan el color de texto, como en el resto de lenguajes del editor.
+- Si el fence no declara ningún lenguaje, usa `text` o declara un lenguaje no reconocido (incluidos `yaml`, `markdown` y `diff`, que se resaltan solo en el visor), el bloque completo (marcadores y contenido) se muestra en ese mismo verde: no hay token que aplicar.
+- Al desactivar esa opción, el bloque completo (marcadores y contenido) se muestra en ese mismo verde y el tokenizador no se ejecuta, lo que reduce el trabajo del editor en documentos grandes. La preferencia se guarda y se aplica al volver a abrir el programa.
 
-### Normalización automática del código
+### Normalización del código
 
-Al definir o editar un bloque cercado, el contenido se normaliza según el lenguaje (unos 500 ms después de la última pulsación; el bloque que contiene el cursor se respeta hasta que se fuerza la normalización):
+Al definir o editar un bloque cercado, el contenido se normaliza según el lenguaje (unos 500 ms después de la última pulsación; el bloque que contiene el cursor se respeta hasta que se fuerza la normalización). La opción **Editar → Normalizar código → Automáticamente** controla este comportamiento, se guarda en el registro y viene activada de forma predeterminada:
 
 | Lenguaje | Convención aplicada |
 | --- | --- |
@@ -164,7 +200,7 @@ Al definir o editar un bloque cercado, el contenido se normaliza según el lengu
 | Visual Basic | Grafía canónica de cada palabra clave |
 | JSON | `true`, `false` y `null` en minúsculas |
 
-Los lenguajes sensibles a mayúsculas (C#, JavaScript, C/C++, Python, etc.) no se modifican. **Archivo → Normalizar código** fuerza la normalización de todos los bloques y también se aplica antes de guardar.
+Los lenguajes sensibles a mayúsculas (C#, JavaScript, C/C++, Python, etc.) no se modifican. **Editar → Normalizar código → Normalizar ahora** fuerza la normalización de todos los bloques, aunque la opción automática esté desactivada. Al activar **Automáticamente** se normaliza también el texto que ya está abierto. Al guardar solo se normaliza si la opción automática está activa.
 
 ### Divisores
 
@@ -174,7 +210,7 @@ Los lenguajes sensibles a mayúsculas (C#, JavaScript, C/C++, Python, etc.) no s
 
 ### Índice y navegación
 
-El panel de la izquierda se actualiza con la vista previa: al añadir, cambiar o eliminar un encabezado, la lista y el contador se actualizan en unos 350 ms. Las entradas largas se recortan con puntos suspensivos.
+El panel de la izquierda se actualiza con la vista previa: al añadir, cambiar o eliminar un encabezado, la lista y el contador se actualizan con el mismo ritmo que la vista previa (de inmediato al pulsar `Enter` o aplicar un marcador, y como máximo unos 350 ms después de la última edición). Las entradas largas se recortan con puntos suspensivos.
 
 - En modo vista, un clic desplaza el visor a la sección.
 - En modo edición, un clic mueve el cursor del editor a la línea del encabezado y la vista previa al bloque correspondiente.
@@ -287,9 +323,9 @@ Se validó en Total Commander 9.22a x64 con el plugin instalado en `C:\totalcmd\
 
 ## Estructura del proyecto
 
-- `MainForm.cs`: ventana principal, carga, navegación, zoom, temas, recarga, vigilancia del archivo, modo edición, divisor del índice, sincronización bidireccional y normalización.
+- `MainForm.cs`: ventana principal, carga, navegación, zoom, temas, recarga, vigilancia del archivo, modo edición, divisor del índice, visor incremental, sincronización bidireccional y normalización.
 - `TocPanel.cs`: panel del índice, lista con dibujo propio, selección y temas.
-- `MarkdownEditor.cs`: editor `RichTextBox`, formato de marcadores, resaltado Markdown y de código, continuación de listas y eventos de cursor.
+- `MarkdownEditor.cs`: editor `RichTextBox`, formato de marcadores, resaltado Markdown y de código en segundo plano, continuación de listas y eventos de cursor.
 - `VisorScriptBridge.cs`: puente COM entre la vista previa y el editor para clics y selecciones.
 - `EditSession.cs`: copia temporal, recuperación, guardado y detección de conflictos.
 - `TextFileCodec.cs`: codificación, BOM, saltos de línea y escritura atómica.
@@ -297,6 +333,7 @@ Se validó en Total Commander 9.22a x64 con el plugin instalado en `C:\totalcmd\
 - `FileChangedDialog.cs`: aviso temático de archivo modificado.
 - `DarkChrome.cs`: barra de título, menús, barra de estado y scrollbar de IE.
 - `ThemeManager.cs`: preferencia y detección del tema del sistema.
+- `SettingsStore.cs`: preferencias booleanas del visor en el registro (índice, resaltado de código y normalización automática).
 - `Markdown/`: parser, renderizador, saneador, resaltador, normalizador de código y exportador.
 - `Assets/`: hojas de estilo, icono y estado vacío.
 - `test/`: documento de prueba, exportaciones, capturas y scripts de validación.
@@ -304,95 +341,13 @@ Se validó en Total Commander 9.22a x64 con el plugin instalado en `C:\totalcmd\
 
 ## Pruebas
 
-Para reexportar el documento de prueba y validar ambos temas:
+Las suites de prueba se ejecutan en PowerShell y validan la interfaz, la exportación HTML y el comportamiento con documentos grandes. Ver `test/README.md` para detalles completos.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\test\verify-export.ps1
-```
+- `verify-export.ps1`: exporta `test/sample.md` a HTML autónomo (temas oscuro y claro) y comprueba encabezados, enlaces, seguridad y recursos.
+- `ui_sync_verify.ps1`: ejecuta el visor real alojado en PowerShell y comprueba editor, visor, sincronización, atajos F2-F5 y el índice generado (viewer-only).
+- `stress-large.ps1`: valida rendimiento con un documento de más de 2000 líneas y 144 bloques cercados.
 
-El script comprueba, entre otras cosas:
-
-- 11 encabezados con identificadores únicos y 11 enlaces de TOC con destino válido.
-- Enlace `#tabla` presente y resuelto.
-- Ausencia de scripts, `javascript:` y atributos `on*`.
-- Front matter oculto.
-- 2 alertas, 1 tabla, notas al pie y tokens de resaltado.
-- Imagen local incrustada como data URI.
-- CSS del tema correspondiente y ausencia de recursos externos.
-
-Resultado de la última ejecución: **todas las comprobaciones pasan** para `sample-dark.html` y `sample-light.html`.
-
-La interfaz se valida además con un arnés que ejecuta el visor real alojado en PowerShell y comprueba el editor, el resaltado y la sincronización:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\test\ui_sync_verify.ps1
-```
-
-Resultado de la última ejecución: **83 comprobaciones correctas, 0 fallos**. Incluye:
-
-- Marcadores `#`, `**Negrita**`, `*cursiva*` y `~~tachado~~` con el estilo esperado.
-- Tokens de código y resaltado en el visor para C#, JavaScript, C++, BASIC, Pascal, Fortran y JSON.
-- Resaltado de LEN y LEAL (mnemónicos, rotaciones, comentarios y números) y normalización a mayúsculas.
-- Alineación editor → visor por proporción vertical y resaltado solo con selección explícita.
-- Clic y selección visor → editor a través del puente `window.external`: el clic mueve y desmarca ambos paneles; la selección marca el rango.
-- Un clic posterior a una selección borra el resaltado del visor y la selección del editor, y mover el cursor sin seleccionar no marca nada.
-- Un clic en un margen sin bloque de origen o en un enlace/imagen también borra la selección de ambos paneles; en enlaces e imágenes el cursor no se mueve.
-- Doble clic en ambos divisores (50/50 y ancho mínimo del índice).
-- Ciclo F2 de tres estados, TOC en el documento y sincronización al volver a editar.
-- Emoji, CJK, árabe, matemáticas y caracteres de caja en editor y visor.
-- Normalización automática de BASIC, Fortran, Pascal, JSON y Visual Basic, incluido el respeto al bloque con el cursor y la normalización forzada.
-
-También se probó en el visor real:
-
-- Aviso **Preguntar** con recarga aceptada y rechazada.
-- **Recargar siempre** desde el aviso y desde el menú, sin volver a preguntar.
-- **No recargar** desde el menú, manteniendo el contenido anterior.
-- Reinicio del visor: el modo vuelve a **Preguntar** (no se persiste).
-- Conservación exacta de la posición de lectura cuando el contenido superior no cambia de altura.
-- Diálogo oscuro y claro según el tema.
-- Guardado normal con codificación, BOM y saltos de línea preservados.
-- Copia temporal creada, eliminada al guardar/descartar y recuperada tras cerrar el proceso de forma forzada.
-- Conflictos por cambio externo y archivo eliminado, con sobrescritura o recreación confirmadas.
-- Diálogos **Guardar/Descartar/Cancelar** al salir del modo edición y al cerrar.
-- Undo/redo sin contaminación del resaltado y continuación automática de listas.
-- Desplazamiento del visor al inicio, mitad y final según el cursor.
-- Seguimiento del cursor al escribir y al deshacer en la vista previa.
-- Navegación desde el panel del índice en modo vista y edición, con el cursor y la vista previa sincronizados.
-- Actualización del índice al añadir un encabezado nuevo (de 11 a 12 entradas).
-- Resaltado de la sección actual al mover el cursor y después de `Ctrl+Home`/`Ctrl+End`.
-- Anchos mínimos en edición: índice 166 px, editor 300 px y visor 286 px con una ventana de 780 px; al ensanchar, el índice vuelve a 220 px.
-- Exportación desde el editor con cambios sin guardar, sin anclas ni scripts en el HTML.
-- Ciclo F2 de tres estados: visor solo → editor + visor → solo editor → visor solo (con sincronización del documento al volver).
-- TOC en el documento: alternar desde el menú **Ver → Índice en el documento** muestra/oculta el índice con la posición de scroll conservada.
-- Editor con fuente Segoe UI Symbol: emoji, CJK, árabe y símbolos matemáticos se renderizan correctamente sin caer en `?`.
-- `demo-full.md` con ejemplos de LEN y LEAL: etiquetas, comentarios `/` y `;`, rotaciones, cadenas, números `0o`/`0d`/`0x` y operadores de LEAL resaltados en el visor y en el editor.
-- Clic en el visor sobre una línea del documento: el editor mueve el cursor a esa línea y la coloca a la altura proporcional, sin seleccionarla y borrando cualquier marca anterior; selección de varias líneas en el visor y reflejo del rango en el editor; un clic posterior borra la selección en ambos paneles.
-- Marcadores de encabezado, negrita, cursiva y tachado visibles con su color y estilo en el editor.
-- Normalización automática al crear bloques BASIC, Fortran, Pascal, JSON, Visual Basic, LEN y LEAL; **Archivo → Normalizar código** fuerza todos los bloques.
-
-Capturas disponibles en `test/`:
-
-- `viewer-dark-fullheight.png`: tema oscuro a altura completa.
-- `viewer-light-final.png`: tema claro.
-- `viewer-edit-dark.png`: modo edición con editor a la izquierda y vista previa a la derecha.
-- `viewer-edit-light.png`: modo edición en tema claro.
-- `about-dark.png`: diálogo Acerca de con la versión 1.0.0 y el autor.
-- `viewer-split-min-editor-dark.png` y `viewer-split-min-preview-dark.png`: anchos mínimos del divisor.
-- `sync-home-dark.png`, `sync-middle-dark.png` y `sync-end-dark.png`: seguimiento del cursor al inicio, en medio y al final.
-- `sync-typed-dark.png` y `sync-undone-dark.png`: vista previa tras escribir y tras deshacer.
-- `viewer-dark-menu.png`: menú Ver con el submenú de cambios en el archivo.
-- `viewer-watch-prompt.png` y `viewer-watch-prompt-light.png`: aviso de archivo modificado.
-- `viewer-watch-reloaded.png`: documento recargado.
-- `viewer-watch-auto.png` y `viewer-watch-menu-auto.png`: recarga automática.
-- `viewer-watch-scroll-before.png` y `viewer-watch-scroll-after.png`: conservación del desplazamiento.
-- `toc-view-dark.png` y `toc-view-light.png`: panel del índice en modo vista.
-- `toc-nav-codigo-dark.png` y `toc-nav-final-dark.png`: navegación a una sección intermedia y al final.
-- `toc-edit-initial-dark.png` y `toc-edit-light.png`: modo edición con el panel del índice.
-- `toc-edit-light-newheading.png`: índice actualizado tras añadir un encabezado.
-- `toc-edit-light-minwidth.png` y `toc-edit-light-restored.png`: anchos mínimos y restauración del ancho.
-- `toc-focus-last-dark.png`, `toc-focus-home-dark.png` y `toc-focus-end-dark.png`: resaltado de la sección actual al mover el cursor.
-- `lenleal-view-dark.png`: visor con LEN y LEAL resaltados.
-- `lenleal-edit-dark.png`: editor y visor con LEN y LEAL, marcadores de encabezado/negrita/cursiva y sincronización.
+Resultado actual: **145 PASS, 0 FAIL** en la suite principal, y todos los checks pasan en exportación y estrés.
 
 ## Limitaciones
 
@@ -400,7 +355,7 @@ Capturas disponibles en `test/`:
 - La barra de desplazamiento nativa de IE puede seguir viéndose clara en algunos equipos aunque el resto de la ventana sea oscuro; es una limitación del control.
 - La impresión utiliza el diálogo y la vista previa de IE.
 - El zoom es cosmético y va del 50 % al 300 %.
-- El editor es un `RichTextBox`: el resaltado se aplica por líneas y se omite en documentos de más de 400.000 caracteres para mantener la respuesta.
+- El editor es un `RichTextBox`: el resaltado se aplica como tramos ordenados y sin solapes; en documentos de más de 400.000 caracteres se omite para mantener la respuesta.
 - El seguimiento del cursor es por bloques. Dentro de un bloque muy largo, como un párrafo o un bloque de código de muchas líneas, el visor mantiene el inicio del bloque.
 - El panel del índice solo muestra encabezados Markdown; no incluye encabezados escritos dentro de HTML crudo ni se puede contraer.
 - El modo edición trabaja con un archivo cada vez; no hay pestañas ni edición de varios documentos a la vez.
