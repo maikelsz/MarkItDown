@@ -243,22 +243,24 @@ C     Comentario en Fortran (primera columna)
       END PROGRAM EJEMPLO
 ```
 
-### LEN (ensamblador CID 201/201A/201B)
+### LEN (ensamblador CID 201/A/B)
 
 ```len
-/ Programa de ejemplo LEN
-INICIO, LAC DATO
+/ Programa de ejemplo LEN-1
+*200
+INICIO, LAC
         SUM UNO
+		SUM DOS
         DEL RESULT
         VEA FIN
-DATO,   0x0010
-UNO,    0o0001
+UNO,   	0o0001
+DOS,    0o0010
 RESULT, 0
 FIN,    ALT
 $
 ```
 
-### LEAL (compilador CID 201/201A/201B)
+### LEAL (compilador CID 201/A/B)
 
 ```leal
 LEAL
@@ -272,6 +274,8 @@ PER R
 LIN
 FIN
 ```
+
+
 
 ### JSON
 
@@ -346,6 +350,23 @@ ORDER BY nombre ASC;
 for archivo in *.md; do
     echo "Procesando $archivo"
 done
+```
+
+### Bloques sin lenguaje, texto y lenguaje desconocido
+
+```
+linea sin lenguaje
+segunda linea sin lenguaje
+```
+
+```text
+contenido de tipo texto
+segunda linea de texto
+```
+
+```nolenguajedemo123
+contenido de lenguaje inexistente
+segunda linea desconocida
 ```
 
 ## Caracteres especiales
